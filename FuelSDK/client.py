@@ -10,6 +10,8 @@ import suds.client
 import suds.wsse
 from suds.sax.element import Element
 
+from unverified_https_transport import UnverifiedHttpsTransport
+
 
 from FuelSDK.objects import ET_DataExtension,ET_Subscriber
 
@@ -40,6 +42,7 @@ class ET_Client(object):
     application_type = None
     authorization_code = None
     redirect_URI = None
+    ssl_verify = True
 
     ## get_server_wsdl - if True and a newer WSDL is on the server than the local filesystem retrieve it
     def __init__(self, get_server_wsdl = False, debug = False, params = None, tokenResponse=None):
@@ -180,6 +183,13 @@ class ET_Client(object):
         elif "FUELSDK_REDIRECT_URI" in os.environ:
             self.redirect_URI = os.environ["FUELSDK_REDIRECT_URI"]
 
+        if params is not None and "ssl_verify" in params:
+            self.ssl_verify = params["ssl_verify"]
+        elif config.has_option("Auth Service", "ssl_verify"):
+            self.ssl_verify = config.getboolean("Auth Service", "ssl_verify")
+        elif config.has_option("Web Services", "ssl_verify"):
+            self.ssl_verify = config.getboolean("Web Services", "ssl_verify")
+
         if self.application_type in ["public", "web"]:
             if self.is_none_or_empty_or_blank(self.authorization_code) or self.is_none_or_empty_or_blank(self.redirect_URI):
                 raise Exception('authorizationCode or redirectURI is null: For Public/Web Apps, the authorizationCode and redirectURI must be '
@@ -223,7 +233,7 @@ class ET_Client(object):
         if not os.path.exists(file_location) or os.path.getsize(file_location) == 0:   #if there is no local copy or local copy is empty then go get it...
             self.retrieve_server_wsdl(wsdl_url, file_location)
         elif get_server_wsdl:
-            r = requests.head(wsdl_url)
+            r = requests.head(wsdl_url, verify=self.ssl_verify)
             if r is not None and 'last-modified' in r.headers:
                 server_wsdl_updated = time.strptime(r.headers['last-modified'], '%a, %d %b %Y %H:%M:%S %Z')
                 file_wsdl_updated = time.gmtime(os.path.getmtime(file_location))
@@ -237,7 +247,7 @@ class ET_Client(object):
         """
         get the WSDL from the server and save it locally
         """
-        r = requests.get(wsdl_url)
+        r = requests.get(wsdl_url, verify=self.ssl_verify)
         f = open(file_location, 'w')
         f.write(r.text)
         
@@ -246,7 +256,8 @@ class ET_Client(object):
         if self.soap_endpoint is None or not self.soap_endpoint:
             self.soap_endpoint = self.get_soap_endpoint()
 
-        self.soap_client = suds.client.Client(self.wsdl_file_url, faults=False, cachingpolicy=1)
+        https_transport = None if self.ssl_verify else UnverifiedHttpsTransport()
+        self.soap_client = suds.client.Client(self.wsdl_file_url, faults=False, cachingpolicy=1, https_transport=https_transport)
         self.soap_client.set_options(location=self.soap_endpoint)
         self.soap_client.set_options(headers={'user-agent' : 'FuelSDK-Python-v1.3.0'})
 
@@ -290,7 +301,7 @@ class ET_Client(object):
                 self.auth_url = self.auth_url.strip()
                 self.auth_url = self.auth_url + legacyString
 
-            r = requests.post(self.auth_url, data=json.dumps(payload), headers=headers)
+            r = requests.post(self.auth_url, data=json.dumps(payload), headers=headers, verify=self.ssl_verify)
             tokenResponse = r.json()
             
             if 'accessToken' not in tokenResponse:
@@ -319,7 +330,7 @@ class ET_Client(object):
 
             auth_endpoint = self.auth_url.strip() + '/v2/token'
 
-            r = requests.post(auth_endpoint, data=json.dumps(payload), headers=headers)
+            r = requests.post(auth_endpoint, data=json.dumps(payload), headers=headers, verify=self.ssl_verify)
             tokenResponse = r.json()
 
             if 'access_token' not in tokenResponse:
@@ -393,7 +404,7 @@ class ET_Client(object):
             r = requests.get(self.base_api_url + '/platform/v1/endpoints/soap', headers={
                 'user-agent': 'FuelSDK-Python-v1.3.0',
                 'authorization': 'Bearer ' + self.authToken
-            })
+            }, verify=self.ssl_verify)
 
             contextResponse = r.json()
             if ('url' in contextResponse):

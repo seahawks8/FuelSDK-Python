@@ -323,7 +323,7 @@ class ET_GetSupport(ET_BaseObject):
 ##
 ########
 class ET_GetRest(ET_Constructor):
-    def __init__(self, auth_stub, endpoint, qs = None):
+    def __init__(self, auth_stub, endpoint, qs = None, ssl_verify = True):
         auth_stub.refresh_token()   
         fullendpoint = endpoint
         urlSeparator = '?'
@@ -332,7 +332,7 @@ class ET_GetRest(ET_Constructor):
             urlSeparator = '&'
 
         headers = {'authorization' : 'Bearer ' + auth_stub.authToken,  'user-agent' : 'FuelSDK-Python-v1.3.0'}
-        r = requests.get(fullendpoint, headers=headers)
+        r = requests.get(fullendpoint, headers=headers, verify=ssl_verify)
     
         
         self.more_results = False
@@ -346,11 +346,11 @@ class ET_GetRest(ET_Constructor):
 ##
 ########
 class ET_PostRest(ET_Constructor):  
-    def __init__(self, auth_stub, endpoint, payload):
+    def __init__(self, auth_stub, endpoint, payload, ssl_verify = True):
         auth_stub.refresh_token()
         
         headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python-v1.3.0', 'authorization' : 'Bearer ' + auth_stub.authToken}
-        r = requests.post(endpoint, data=json.dumps(payload), headers=headers)
+        r = requests.post(endpoint, data=json.dumps(payload), headers=headers, verify=ssl_verify)
         
         obj = super(ET_PostRest, self).__init__(r, True)
         return obj
@@ -361,11 +361,11 @@ class ET_PostRest(ET_Constructor):
 ##
 ########
 class ET_PatchRest(ET_Constructor):
-    def __init__(self, auth_stub, endpoint, payload):
+    def __init__(self, auth_stub, endpoint, payload, ssl_verify = True):
         auth_stub.refresh_token()
         
         headers = {'content-type' : 'application/json', 'user-agent' : 'FuelSDK-Python-v1.3.0', 'authorization' : 'Bearer ' + auth_stub.authToken}
-        r = requests.patch(endpoint , data=json.dumps(payload), headers=headers)
+        r = requests.patch(endpoint , data=json.dumps(payload), headers=headers, verify=ssl_verify)
         
         obj = super(ET_PatchRest, self).__init__(r, True)
         return obj
@@ -376,11 +376,11 @@ class ET_PatchRest(ET_Constructor):
 ##
 ########
 class ET_DeleteRest(ET_Constructor):
-    def __init__(self, auth_stub, endpoint):
+    def __init__(self, auth_stub, endpoint, ssl_verify = True):
         auth_stub.refresh_token()
 
         headers = {'authorization' : 'Bearer ' + auth_stub.authToken, 'user-agent' : 'FuelSDK-Python-v1.3.0'}
-        r = requests.delete(endpoint, headers=headers)
+        r = requests.delete(endpoint, headers=headers, verify=ssl_verify)
         
         obj = super(ET_DeleteRest, self).__init__(r, True)
         return obj
