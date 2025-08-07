@@ -34,6 +34,7 @@ New Features in Version 1.3.0
   baseapiurl: <REST TENANT SPECIFIC ENDPOINT>
   soapendpoint: <SOAP TENANT SPECIFIC ENDPOINT>
   wsdl_file_local_loc: <WSDL_PATH>/ExactTargetWSDL.xml
+  ssl_verify: <True/False>
   
   [Auth Service]
   useOAuth2Authentication: True
@@ -42,6 +43,7 @@ New Features in Version 1.3.0
   applicationType: <APPLICATION_TYPE>
   redirectURI: <REDIRECT_URI_FOR_PUBLIC/WEB_APP>
   authorizationCode: <AUTHORIZATION_CODE_FOR_PUBLIC/WEB_APP>
+  ssl_verify: <True/False>
   ```
 
   Example passing config as a parameter to ET_Client constructor:
@@ -63,6 +65,7 @@ New Features in Version 1.3.0
         'applicationType': '<APPLICATION_TYPE>'
         'redirectURI': '<REDIRECT_URI_FOR_PUBLIC/WEB_APP>'
         'authorizationCode': '<AUTHORIZATION_CODE_FOR_PUBLIC/WEB_APP>'
+        'ssl_verify': <True/False>
     })
   ```
   
@@ -86,11 +89,13 @@ New Features in Version 1.2.0
   baseapiurl: <REST TENANT SPECIFIC ENDPOINT>
   soapendpoint: <SOAP TENANT SPECIFIC ENDPOINT>
   wsdl_file_local_loc: <WSDL_PATH>/ExactTargetWSDL.xml
+  ssl_verify: <True/False>
   
   [Auth Service]
   useOAuth2Authentication: True
   accountId: <TARGET_ACCOUNT_ID>
   scope: <PERMISSION_LIST>
+  ssl_verify: <True/False>
   ```
   
   Example passing config as a parameter to ET_Client constructor:
@@ -108,7 +113,8 @@ New Features in Version 1.2.0
         'wsdl_file_local_loc': r'<WSDL_PATH>/ExactTargetWSDL.xml',
         'useOAuth2Authentication': 'True',
         'accountId': '<TARGET_ACCOUNT_ID>',
-        'scope': '<PERMISSION_LIST>'
+        'scope': '<PERMISSION_LIST>',
+        'ssl_verify': 'False'
     })
   ```
 
